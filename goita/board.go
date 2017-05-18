@@ -17,25 +17,25 @@ const attackerLogCapacity = 13 // 3moves * 4 player + 1 (last move)
 
 // Board represents the whole component of the goita game
 type Board struct {
-	players          []*Player
+	Players          []*Player
 	Turn             int
-	moveHistory      []*Move
-	moveHistoryLen   int
-	moveHistoryIndex int
-	lastAttackMove   *Move
-	attackerLog      []int
-	attackMoveLog    []*Move
-	kingUsed         int
+	MoveHistory      []*Move
+	MoveHistoryLen   int
+	MoveHistoryIndex int
+	LastAttackMove   *Move
+	AttackerLog      []int
+	AttackMoveLog    []*Move
+	KingUsed         int
 	Finish           bool // true when finished
-	initialHands     []string
-	dealer           int
-	initialShiCounts []int // less than 5 will be 0
+	InitialHands     []string
+	Dealer           int
+	InitialShiCounts []int // less than 5 will be 0
 }
 
-// NewBoard creates board instance with hands and dealer
-func NewBoard(dealer int, hands []*KomaArray) *Board {
+// NewBoard creates board instance with hands and Dealer
+func NewBoard(Dealer int, hands []*KomaArray) *Board {
 	b := &Board{}
-	b.initWithInitialStateData(dealer, hands)
+	b.initWithInitialStateData(Dealer, hands)
 	return b
 }
 
@@ -53,26 +53,26 @@ func (b *Board) Copy() *Board {
 }
 
 func (b *Board) initBase() {
-	b.players = make([]*Player, 4)
-	b.moveHistory = make([]*Move, moveHistoryCapacity)
-	b.moveHistoryLen = 0
-	b.moveHistoryIndex = -1
-	b.lastAttackMove = nil
-	b.attackerLog = make([]int, 0, attackerLogCapacity)
-	b.attackMoveLog = make([]*Move, 0, attackerLogCapacity)
-	b.kingUsed = 0
+	b.Players = make([]*Player, 4)
+	b.MoveHistory = make([]*Move, moveHistoryCapacity)
+	b.MoveHistoryLen = 0
+	b.MoveHistoryIndex = -1
+	b.LastAttackMove = nil
+	b.AttackerLog = make([]int, 0, attackerLogCapacity)
+	b.AttackMoveLog = make([]*Move, 0, attackerLogCapacity)
+	b.KingUsed = 0
 	b.Finish = false
-	b.initialHands = make([]string, 4)
-	b.initialShiCounts = make([]int, 4)
+	b.InitialHands = make([]string, 4)
+	b.InitialShiCounts = make([]int, 4)
 }
 
-func (b *Board) initWithInitialStateData(dealer int, hands []*KomaArray) {
+func (b *Board) initWithInitialStateData(Dealer int, hands []*KomaArray) {
 	b.initBase()
-	b.dealer = dealer
+	b.Dealer = Dealer
 	for i, v := range hands {
-		b.initialHands[i] = v.String()
+		b.InitialHands[i] = v.String()
 		p := NewPlayer(v)
-		b.players[i] = p
+		b.Players[i] = p
 	}
 	b.initYaku()
 }
@@ -81,23 +81,23 @@ func (b *Board) initWithHistoryString(history string) {
 	b.initBase()
 	state := strings.Split(history, ",")
 	if len(state) < 5 {
-		panic("history must contain 4 initial hands and dealer info")
+		panic("history must contain 4 initial hands and Dealer info")
 	}
 
 	for i := 0; i < 4; i++ {
-		b.initialHands[i] = state[i]
+		b.InitialHands[i] = state[i]
 		k := ParseKomaArray(state[i])
 		p := NewPlayer(&k)
-		b.players[i] = p
+		b.Players[i] = p
 	}
-	dealerinfo := strings.Split(state[4], "")
-	noStr := dealerinfo[1]
+	Dealerinfo := strings.Split(state[4], "")
+	noStr := Dealerinfo[1]
 	no, err := strconv.ParseInt(noStr, 10, 4)
 	if err != nil {
 		panic(err)
 	}
-	b.dealer = int(no) - 1
-	b.Turn = b.dealer
+	b.Dealer = int(no) - 1
+	b.Turn = b.Dealer
 
 	for i := 5; i < len(state); i++ {
 		m, _ := ParseMove(state[i])
@@ -108,14 +108,14 @@ func (b *Board) initWithHistoryString(history string) {
 }
 
 func (b *Board) initYaku() {
-	for i, p := range b.players {
+	for i, p := range b.Players {
 		shiCount := p.hand.Count(Shi)
 		if shiCount >= 5 {
-			b.initialShiCounts[i] = shiCount
+			b.InitialShiCounts[i] = shiCount
 		}
 	}
 	goshi := -1
-	for i, c := range b.initialShiCounts {
+	for i, c := range b.InitialShiCounts {
 		if c > 5 {
 			b.Finish = true
 		} else if c == 5 {
@@ -130,10 +130,10 @@ func (b *Board) initYaku() {
 
 // LastAttacker returns the number of last attacker
 func (b *Board) LastAttacker() int {
-	if len(b.attackerLog) == 0 {
-		return b.dealer
+	if len(b.AttackerLog) == 0 {
+		return b.Dealer
 	}
-	return b.attackerLog[len(b.attackerLog)-1]
+	return b.AttackerLog[len(b.AttackerLog)-1]
 }
 
 // PlayMove apply move to board
@@ -143,22 +143,22 @@ func (b *Board) PlayMove(move *Move) (ok bool) {
 		move.faceDown = true
 	}
 
-	b.moveHistoryIndex++
-	b.moveHistory[b.moveHistoryIndex] = move
-	b.moveHistoryLen = b.moveHistoryIndex + 1
+	b.MoveHistoryIndex++
+	b.MoveHistory[b.MoveHistoryIndex] = move
+	b.MoveHistoryLen = b.MoveHistoryIndex + 1
 
 	finished := false
 	if !move.IsPass() {
-		p := b.players[b.Turn]
+		p := b.Players[b.Turn]
 		p.pushKoma(move.block, move.faceDown)
 		p.pushKoma(move.attack, false)
 
 		if (move.block.IsKing() && !move.faceDown) || move.attack.IsKing() {
-			b.kingUsed++
+			b.KingUsed++
 		}
-		b.lastAttackMove = move
-		b.attackerLog = append(b.attackerLog, b.Turn)
-		b.attackMoveLog = append(b.attackMoveLog, move)
+		b.LastAttackMove = move
+		b.AttackerLog = append(b.AttackerLog, b.Turn)
+		b.AttackMoveLog = append(b.AttackMoveLog, move)
 		finished = b.IsEnd()
 	}
 
@@ -173,40 +173,40 @@ func (b *Board) PlayMove(move *Move) (ok bool) {
 
 // RedoMove turn back undo. it can redo to the latest move.
 func (b *Board) RedoMove() (ok bool) {
-	if b.moveHistoryLen <= b.moveHistoryIndex+1 {
+	if b.MoveHistoryLen <= b.MoveHistoryIndex+1 {
 		return false
 	}
-	move := b.moveHistory[b.moveHistoryIndex+1]
+	move := b.MoveHistory[b.MoveHistoryIndex+1]
 	b.PlayMove(move)
 	return true
 }
 
 // UndoMove undo the last move. it can undo to the beginning of the deal.
 func (b *Board) UndoMove() (ok bool) {
-	if b.moveHistoryIndex < 0 {
+	if b.MoveHistoryIndex < 0 {
 		return false
 	}
 	b.Turn = util.GetPreviousTurn(b.Turn)
 	b.Finish = false
 
-	move := b.moveHistory[b.moveHistoryIndex]
-	b.moveHistoryIndex--
+	move := b.MoveHistory[b.MoveHistoryIndex]
+	b.MoveHistoryIndex--
 
 	if !move.IsPass() {
-		p := b.players[b.Turn]
+		p := b.Players[b.Turn]
 		p.popKoma()
 		p.popKoma()
 
 		if (move.block.IsKing() && !move.faceDown) || move.attack.IsKing() {
-			b.kingUsed--
+			b.KingUsed--
 		}
 
-		b.attackerLog = b.attackerLog[:len(b.attackerLog)-1]
-		b.attackMoveLog = b.attackMoveLog[:len(b.attackMoveLog)-1]
-		if len(b.attackMoveLog) == 0 {
-			b.lastAttackMove = nil
+		b.AttackerLog = b.AttackerLog[:len(b.AttackerLog)-1]
+		b.AttackMoveLog = b.AttackMoveLog[:len(b.AttackMoveLog)-1]
+		if len(b.AttackMoveLog) == 0 {
+			b.LastAttackMove = nil
 		} else {
-			b.lastAttackMove = b.attackMoveLog[len(b.attackMoveLog)-1]
+			b.LastAttackMove = b.AttackMoveLog[len(b.AttackMoveLog)-1]
 		}
 	}
 	return true
@@ -218,11 +218,11 @@ func (b *Board) GetPossibleMoves() []*Move {
 	if b.Finish {
 		return moves
 	}
-	hand := b.players[b.Turn].hand
+	hand := b.Players[b.Turn].hand
 	uniqueHand := hand.GetUnique()
-	fieldCounter := b.players[b.Turn].fieldCounter
+	fieldCounter := b.Players[b.Turn].fieldCounter
 
-	if b.lastAttackMove == nil || b.Turn == b.attackerLog[len(b.attackerLog)-1] {
+	if b.LastAttackMove == nil || b.Turn == b.AttackerLog[len(b.AttackerLog)-1] {
 		// Face-Down move
 		for _, faceDown := range uniqueHand {
 			for _, attack := range uniqueHand {
@@ -231,7 +231,7 @@ func (b *Board) GetPossibleMoves() []*Move {
 				}
 				// Ou(王) as attack koma rule
 				if fieldCounter < 6 && attack.IsKing() {
-					if hand.Count(Ou) < 2 && b.kingUsed == 0 {
+					if hand.Count(Ou) < 2 && b.KingUsed == 0 {
 						continue
 					}
 				}
@@ -241,7 +241,7 @@ func (b *Board) GetPossibleMoves() []*Move {
 	} else {
 		// Match move
 		moves = append(moves, NewPassMove())
-		block := b.lastAttackMove.attack
+		block := b.LastAttackMove.attack
 		if hand.Contains(block) {
 			for _, attack := range uniqueHand {
 				if block == attack && hand.Count(block) < 2 {
@@ -249,7 +249,7 @@ func (b *Board) GetPossibleMoves() []*Move {
 				}
 				// Ou(王) as attack koma rule
 				if fieldCounter < 6 && attack.IsKing() {
-					if hand.Count(Ou) < 2 && b.kingUsed == 0 {
+					if hand.Count(Ou) < 2 && b.KingUsed == 0 {
 						continue
 					}
 				}
@@ -274,7 +274,7 @@ func (b *Board) IsEnd() bool {
 	if b.Finish {
 		return true
 	}
-	for _, p := range b.players {
+	for _, p := range b.Players {
 		if p.fieldCounter == FieldLength {
 			return true
 		}
@@ -285,7 +285,7 @@ func (b *Board) IsEnd() bool {
 // IsGoshi returns true if only one player has goshi
 func (b *Board) IsGoshi() bool {
 	goshi := -1
-	for i, v := range b.initialShiCounts {
+	for i, v := range b.InitialShiCounts {
 		if v == 5 {
 			if goshi >= 0 {
 				return false
@@ -299,7 +299,7 @@ func (b *Board) IsGoshi() bool {
 // HasYaku returns true if there is a yaku
 func (b *Board) HasYaku() bool {
 	goshi := -1
-	for i, v := range b.initialShiCounts {
+	for i, v := range b.InitialShiCounts {
 		if v >= 6 {
 			return true
 		} else if v >= 5 {
@@ -318,7 +318,7 @@ func (b *Board) HasYaku() bool {
 // WonPlayerNo returns the won player number, or -1 if deal is not end.
 func (b *Board) WonPlayerNo() int {
 	if b.Finish {
-		for i, p := range b.players {
+		for i, p := range b.Players {
 			if p.fieldCounter == FieldLength {
 				return i
 			}
@@ -335,8 +335,8 @@ func (b *Board) Score() int {
 
 	// yaku ? or finish move
 	// b.HasYaku() //TODO: yaku score
-	s := b.lastAttackMove.attack.GetScore()
-	if b.lastAttackMove.faceDown && b.lastAttackMove.block == b.lastAttackMove.attack {
+	s := b.LastAttackMove.attack.GetScore()
+	if b.LastAttackMove.faceDown && b.LastAttackMove.block == b.LastAttackMove.attack {
 		s = s * 2
 	}
 	return s
@@ -345,19 +345,36 @@ func (b *Board) Score() int {
 func (b *Board) String() string {
 	// 00000000,00000000,00000000,00000000,s1(38chars) + ,100,2p,3p,4p (13char) * 49 = 675byte
 	buf := make([]byte, 0, 1000)
-	for _, v := range b.initialHands {
+	for _, v := range b.InitialHands {
 		buf = append(buf, v...)
 		buf = append(buf, ',')
 	}
 	buf = append(buf, 's')
-	buf = append(buf, '1'+byte(b.dealer))
-	turn := b.dealer
-	for i := 0; i < b.moveHistoryLen; i++ {
-		m := b.moveHistory[i]
+	buf = append(buf, '1'+byte(b.Dealer))
+	turn := b.Dealer
+	for i := 0; i < b.MoveHistoryLen; i++ {
+		m := b.MoveHistory[i]
 		buf = append(buf, ',')
 		buf = append(buf, '1'+byte(turn))
 		buf = append(buf, m.OpenString()...)
 		turn = util.GetNextTurn(turn)
+	}
+	return string(buf)
+}
+
+// SubHistory returns a part of history
+func (b *Board) SubHistory(start int, end int) string {
+	buf := make([]byte, 0, 1000)
+
+	turn := (b.Dealer + start) % 4
+	for i := start; i < end; i++ {
+		m := b.MoveHistory[i]
+		if i > start {
+			buf = append(buf, ',')
+		}
+		buf = append(buf, '1'+byte(turn))
+		buf = append(buf, m.OpenString()...)
+		turn = (turn + 1) % 4
 	}
 	return string(buf)
 }
