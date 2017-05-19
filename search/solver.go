@@ -33,7 +33,7 @@ func Solve(board *goita.Board) []EvaluatedMove {
 	}
 	for i := 0; i < len(moves); i++ {
 		result := <-ch
-		fmt.Println("search done!")
+		// fmt.Println("search done!")
 		evaledMoves = append(evaledMoves, *result)
 	}
 

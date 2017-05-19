@@ -12,23 +12,35 @@ type Move struct {
 	faceDown bool
 }
 
+var moveMap map[byte]*Move
+
 // NewMatchMove creates match move
 func NewMatchMove(block, attack Koma) *Move {
-	return &Move{block, attack, false}
+	if moveMap == nil {
+		moveMap = getMoveMap()
+	}
+	return moveMap[moveHash(block, attack, false)]
+	//return &Move{block, attack, false}
 }
 
 // NewFaceDownMove creates face-down move
 func NewFaceDownMove(block, attack Koma) *Move {
-	return &Move{block, attack, true}
+	if moveMap == nil {
+		moveMap = getMoveMap()
+	}
+	return moveMap[moveHash(block, attack, true)]
 }
 
 // NewPassMove creates pass move
 func NewPassMove() *Move {
-	return &Move{Empty, Empty, false}
+	if moveMap == nil {
+		moveMap = getMoveMap()
+	}
+	return moveMap[moveHash(Empty, Empty, false)]
 }
 
 // ParseMove parse
-func ParseMove(m string) (*Move, bool) {
+func ParseMove(m string) (move *Move, ok bool) {
 	elem := strings.Split(m, "")
 	if elem[1] == "p" {
 		return NewPassMove(), true
@@ -43,8 +55,38 @@ func (m *Move) IsPass() bool {
 	return m.block == Empty
 }
 
+// Hash returns identical hash key
+func (m *Move) Hash() byte {
+	return moveHash(m.block, m.attack, m.faceDown)
+}
+
+// MoveHash calculate identical hash key
+func moveHash(block Koma, attack Koma, faceDown bool) byte {
+	// block 0-8
+	// attack 0-8
+	// facedown flag 1 bit
+	if faceDown {
+		return 100 + byte(block)*10 + byte(attack)
+	}
+	return byte(block)*10 + byte(attack)
+}
+
+func getMoveMap() map[byte]*Move {
+	mmap := make(map[byte]*Move)
+
+	for b := 0; b < 10; b++ {
+		for a := 0; a < 10; a++ {
+			key1 := moveHash(Koma(b), Koma(a), true)
+			mmap[key1] = &Move{Koma(b), Koma(a), true}
+			key2 := moveHash(Koma(b), Koma(a), false)
+			mmap[key2] = &Move{Koma(b), Koma(a), false}
+		}
+	}
+	return mmap
+}
+
 // String returns the string representation for block(may be hidden) and attack, or for pass
-func (m Move) String() string {
+func (m *Move) String() string {
 	if m.IsPass() {
 		return "p"
 	}
