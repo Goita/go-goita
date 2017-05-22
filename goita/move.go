@@ -2,6 +2,8 @@ package goita
 
 import (
 	"strings"
+
+	"github.com/Goita/go-goita/util"
 )
 
 // Move represents block and attack move, or pass move.
@@ -12,7 +14,10 @@ type Move struct {
 	faceDown bool
 }
 
-var moveMap map[byte]*Move
+// MoveHashArray have hashes of move
+type MoveHashArray []byte
+
+var moveMap []*Move
 
 // NewMatchMove creates match move
 func NewMatchMove(block, attack Koma) *Move {
@@ -71,8 +76,8 @@ func moveHash(block Koma, attack Koma, faceDown bool) byte {
 	return byte(block)*10 + byte(attack)
 }
 
-func getMoveMap() map[byte]*Move {
-	mmap := make(map[byte]*Move)
+func getMoveMap() []*Move {
+	mmap := make([]*Move, 256, 256)
 
 	for b := 0; b < 10; b++ {
 		for a := 0; a < 10; a++ {
@@ -102,4 +107,19 @@ func (m *Move) OpenString() string {
 		return "p"
 	}
 	return m.block.String() + m.attack.String()
+}
+
+// History converts move hash array into history string
+func (a MoveHashArray) History(startTurn int) string {
+	buf := make([]byte, 0, 1000)
+	turn := startTurn
+	for i, m := range a {
+		if i > 0 {
+			buf = append(buf, ',')
+		}
+		buf = append(buf, '1'+byte(turn))
+		buf = append(buf, moveMap[m].OpenString()...)
+		turn = util.GetNextTurn(turn)
+	}
+	return string(buf)
 }

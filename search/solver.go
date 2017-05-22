@@ -11,7 +11,7 @@ import (
 type EvaluatedMove struct {
 	Move    *goita.Move
 	Score   int
-	History string
+	History goita.MoveHashArray
 }
 
 func (em EvaluatedMove) String() string {

@@ -118,7 +118,7 @@ func (koma Koma) IsHidden() bool {
 // CanBlock returns true if the koma can block the target koma
 func (koma Koma) CanBlock(target Koma) bool {
 	if koma.IsKing() {
-		if target.IsShi() || target == Gon {
+		if target == Shi || target == Gon {
 			return false
 		}
 		return true
@@ -130,7 +130,8 @@ func (koma Koma) String() string {
 	if koma.IsHidden() {
 		return "x"
 	}
-	return fmt.Sprintf("%x", byte(koma))
+	str := []byte{byte(koma) + '0'}
+	return string(str)
 }
 
 // ParseKomaArray creates array of koma from string
@@ -156,16 +157,20 @@ func NewKomaArrayFromBytes(handOrField []byte) *KomaArray {
 
 // GetUnique gets distinct koma
 func (k *KomaArray) GetUnique() KomaArray {
-	unqMap := make(map[Koma]bool)
+	// koma range 1-8 (9 including gyoku)
+	unqMap := make([]Koma, 10)
 	unq := make(KomaArray, 0, FieldLength)
 	for _, v := range *k {
 		if v.IsEmpty() || v.IsHidden() {
 			continue
 		}
-		if _, ok := unqMap[v]; !ok {
-			unqMap[v] = true
-			unq = append(unq, v)
+		unqMap[v] = v
+	}
+	for _, v := range unqMap {
+		if v == 0 {
+			continue
 		}
+		unq = append(unq, v)
 	}
 	return unq
 }
@@ -209,7 +214,7 @@ func (k *KomaArray) Swap(i, j int) {
 
 // SortDesc makes the array order sorted descending
 func (k *KomaArray) SortDesc() {
-	sort.Slice(k, k.More)
+	sort.Slice(*k, func(i, j int) bool { return (*k)[i] > (*k)[j] })
 }
 
 // Search returns the index of koma

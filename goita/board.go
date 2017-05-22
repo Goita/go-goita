@@ -159,7 +159,7 @@ func (b *Board) PlayMove(move *Move) (ok bool) {
 		b.LastAttackMove = move
 		b.AttackerLog = append(b.AttackerLog, b.Turn)
 		b.AttackMoveLog = append(b.AttackMoveLog, move)
-		finished = b.IsEnd()
+		finished = p.fieldCounter == FieldLength
 	}
 
 	b.Turn = util.GetNextTurn(b.Turn)
@@ -269,7 +269,7 @@ func (b *Board) GetPossibleMoves() []*Move {
 	return moves
 }
 
-// IsEnd returns true if the deal is finished
+// IsEnd returns true if the deal is finished (this is slow)
 func (b *Board) IsEnd() bool {
 	if b.Finish {
 		return true
@@ -363,18 +363,11 @@ func (b *Board) String() string {
 }
 
 // SubHistory returns a part of history
-func (b *Board) SubHistory(start int, end int) string {
-	buf := make([]byte, 0, 1000)
-
-	turn := (b.Dealer + start) % 4
+func (b *Board) SubHistory(start int, end int) MoveHashArray {
+	moves := make(MoveHashArray, 0, 1000)
 	for i := start; i < end; i++ {
 		m := b.MoveHistory[i]
-		if i > start {
-			buf = append(buf, ',')
-		}
-		buf = append(buf, '1'+byte(turn))
-		buf = append(buf, m.OpenString()...)
-		turn = (turn + 1) % 4
+		moves = append(moves, m.Hash())
 	}
-	return string(buf)
+	return moves
 }
