@@ -214,16 +214,18 @@ func (b *Board) UndoMove() (ok bool) {
 
 // GetPossibleMoves returns a list of possible moves
 func (b *Board) GetPossibleMoves() []*Move {
-	moves := make([]*Move, 0, 50)
 	if b.Finish {
-		return moves
+		return []*Move{}
 	}
+	var moves []*Move
 	hand := b.Players[b.Turn].hand
 	uniqueHand := hand.GetUnique()
+	uniqueCount := len(uniqueHand)
 	fieldCounter := b.Players[b.Turn].fieldCounter
 
 	if b.LastAttackMove == nil || b.Turn == b.AttackerLog[len(b.AttackerLog)-1] {
 		// Face-Down move
+		moves = make([]*Move, 0, uniqueCount*(uniqueCount-1))
 		for _, faceDown := range uniqueHand {
 			for _, attack := range uniqueHand {
 				if faceDown == attack && hand.Count(faceDown) < 2 {
@@ -240,6 +242,7 @@ func (b *Board) GetPossibleMoves() []*Move {
 		}
 	} else {
 		// Match move
+		moves = make([]*Move, 0, (uniqueCount-1)*2)
 		moves = append(moves, NewPassMove())
 		block := b.LastAttackMove.attack
 		if hand.Contains(block) {
