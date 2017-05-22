@@ -214,7 +214,7 @@ func (b *Board) UndoMove() (ok bool) {
 
 // GetPossibleMoves returns a list of possible moves
 func (b *Board) GetPossibleMoves() []*Move {
-	moves := make([]*Move, 0, 100)
+	moves := make([]*Move, 0, 50)
 	if b.Finish {
 		return moves
 	}

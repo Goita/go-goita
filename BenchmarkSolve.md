@@ -35,3 +35,4 @@ rev | result | comment
  2 | 10	1328204030 ns/op	1652589372 B/op	 5496297 allocs/op | improve koma.String() 
  3 | 10	1127504252 ns/op	2658544395 B/op	 5496547 allocs/op | MoveHashArray
  4 | 20  922853893 ns/op    2639373691 B/op  5460777 allocs/op | improve GetUnique()
+ 5 | 20  767939206 ns/op    1818866038 B/op  5460578 allocs/op | minimum memory alloc in GetPossibleMoves()
