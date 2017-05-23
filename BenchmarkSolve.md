@@ -23,7 +23,9 @@ go test ./search -bench Solve -benchmem -benchtime 10s
 profile command
 ```sh
 go test ./search -bench Solve -benchmem -cpuprofile cpu.prof
+go tool pprof cpu.prof
 go test ./search -bench Solve -benchmem -memprofile mem.prof
+go tool pprof mem.prof
 ```
 
 
@@ -38,3 +40,4 @@ rev | result | comment
  5 | 20  767939206 ns/op    1818866038 B/op  5460578 allocs/op | minimum memory alloc in GetPossibleMoves()
  6 | 20  612600344 ns/op    1139440927 B/op  5504890 allocs/op | reduce memory alloc block-size in GetPossibleMoves()
  7 | 30	 398722771 ns/op	 125237178 B/op	 5504485 allocs/op | no defer
+ 8 | 50	 330169618 ns/op	  49139967 B/op	 1021554 allocs/op | use pre-allocated memory

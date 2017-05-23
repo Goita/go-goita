@@ -160,13 +160,22 @@ func (k *KomaArray) GetUnique() KomaArray {
 	// koma range 1-8 (9 including gyoku)
 	unqMap := make([]Koma, 10)
 	unq := make(KomaArray, 0, FieldLength)
+	return k.Unique(unqMap, unq)
+}
+
+// Unique gets distinct koma (no memory allocation)
+func (k *KomaArray) Unique(mapBuf []Koma, buf KomaArray) KomaArray {
+	unq := buf[:0]
+	for i := 1; i < 10; i++ {
+		mapBuf[i] = 0
+	}
 	for _, v := range *k {
 		if v.IsEmpty() || v.IsHidden() {
 			continue
 		}
-		unqMap[v] = v
+		mapBuf[v] = v
 	}
-	for _, v := range unqMap {
+	for _, v := range mapBuf {
 		if v == 0 {
 			continue
 		}
