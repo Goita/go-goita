@@ -7,6 +7,8 @@ import (
 	"github.com/Goita/go-goita/util"
 )
 
+type evalFunc func(*goita.Board) int
+
 // EvaluatedMove is Move data and score
 type EvaluatedMove struct {
 	Move    *goita.Move
@@ -18,18 +20,15 @@ func (em EvaluatedMove) String() string {
 	return fmt.Sprintf("[%v:%v -> %v]", em.Move.OpenString(), em.Score, em.History)
 }
 
-type evalFunc func(*goita.Board) int
-
 // Solve search the deal perfect
 func Solve(board *goita.Board) []EvaluatedMove {
-	evaledMoves := make([]EvaluatedMove, 0)
 	moves := board.GetPossibleMoves()
-	ch := make(chan *EvaluatedMove)
+	evaledMoves := make([]EvaluatedMove, 0, len(moves))
+	ch := make(chan *EvaluatedMove, len(moves))
 	for _, move := range moves {
 		go StartAlphaBetaSearch(board, move, func(b *goita.Board) int {
 			return b.Score()
 		}, ch)
-
 	}
 	for i := 0; i < len(moves); i++ {
 		result := <-ch
@@ -52,7 +51,6 @@ func StartAlphaBetaSearch(board *goita.Board, move *goita.Move, eval evalFunc, c
 
 func alphaBetaSearch(board *goita.Board, playerNo int, eval evalFunc, move *goita.Move, min *EvaluatedMove, max *EvaluatedMove, depth int) *EvaluatedMove {
 	board.PlayMove(move)
-	defer board.UndoMove()
 
 	// fmt.Print(move.OpenString())
 	if board.Finish {
@@ -61,6 +59,7 @@ func alphaBetaSearch(board *goita.Board, playerNo int, eval evalFunc, move *goit
 			score *= -1
 		}
 		history := board.SubHistory(board.MoveHistoryIndex-depth, board.MoveHistoryIndex+1)
+		board.UndoMove()
 		return &EvaluatedMove{Score: score, History: history}
 	}
 
@@ -75,6 +74,7 @@ func alphaBetaSearch(board *goita.Board, playerNo int, eval evalFunc, move *goit
 			}
 			if v.Score > max.Score {
 				// fmt.Println("->cut (max)")
+				board.UndoMove()
 				return max
 			}
 		}
@@ -87,10 +87,12 @@ func alphaBetaSearch(board *goita.Board, playerNo int, eval evalFunc, move *goit
 			}
 			if v.Score < min.Score {
 				// fmt.Println("->cut (min)")
+				board.UndoMove()
 				return min
 			}
 		}
 	}
 
+	board.UndoMove()
 	return v
 }

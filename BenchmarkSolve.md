@@ -37,3 +37,4 @@ rev | result | comment
  4 | 20  922853893 ns/op    2639373691 B/op  5460777 allocs/op | improve GetUnique()
  5 | 20  767939206 ns/op    1818866038 B/op  5460578 allocs/op | minimum memory alloc in GetPossibleMoves()
  6 | 20  612600344 ns/op    1139440927 B/op  5504890 allocs/op | reduce memory alloc block-size in GetPossibleMoves()
+ 7 | 30	 398722771 ns/op	 125237178 B/op	 5504485 allocs/op | no defer

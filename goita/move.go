@@ -111,7 +111,7 @@ func (m *Move) OpenString() string {
 
 // History converts move hash array into history string
 func (a MoveHashArray) History(startTurn int) string {
-	buf := make([]byte, 0, 1000)
+	buf := make([]byte, 0, len(a)*4)
 	turn := startTurn
 	for i, m := range a {
 		if i > 0 {

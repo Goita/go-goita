@@ -347,7 +347,8 @@ func (b *Board) Score() int {
 
 func (b *Board) String() string {
 	// 00000000,00000000,00000000,00000000,s1(38chars) + ,100,2p,3p,4p (13char) * 49 = 675byte
-	buf := make([]byte, 0, 1000)
+	bufLen := 38 + 13*len(b.AttackMoveLog)
+	buf := make([]byte, 0, bufLen)
 	for _, v := range b.InitialHands {
 		buf = append(buf, v...)
 		buf = append(buf, ',')
@@ -367,7 +368,7 @@ func (b *Board) String() string {
 
 // SubHistory returns a part of history
 func (b *Board) SubHistory(start int, end int) MoveHashArray {
-	moves := make(MoveHashArray, 0, 1000)
+	moves := make(MoveHashArray, 0, end-start+1)
 	for i := start; i < end; i++ {
 		m := b.MoveHistory[i]
 		moves = append(moves, m.Hash())
