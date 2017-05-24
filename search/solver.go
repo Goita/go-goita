@@ -16,6 +16,12 @@ type EvaluatedMove struct {
 	History goita.MoveHashArray
 }
 
+// LinkedMove is considerable as a solution for reducing memory allocation of EvaluatedMove
+type LinkedMove struct {
+	Move *goita.Move
+	next *LinkedMove
+}
+
 type searchMemory struct {
 	movesBuf    []*goita.Move
 	mapBuf      []goita.Koma
@@ -97,7 +103,7 @@ func negamax(board *goita.Board, playerNo int, eval evalFunc, move *goita.Move, 
 			alpha = v.Score
 		}
 		if alpha >= beta {
-			continue // beta cut-off
+			break // beta cut-off
 		}
 	}
 
