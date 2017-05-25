@@ -85,7 +85,7 @@ func negamax(board *goita.Board, playerNo int, eval evalFunc, move *goita.Move, 
 	// fmt.Print(move.OpenString())
 	if board.Finish {
 		score := -eval(board)
-		history := board.SubHistory(board.MoveHistoryIndex-depth, board.MoveHistoryIndex+1, (*shared)[depth].moveHashBuf)
+		history := board.SubHistory(board.MoveHistoryIndex-depth, board.MoveHistoryIndex+1)
 		board.UndoMove()
 		return &EvaluatedMove{Score: score, History: history}
 	}
@@ -139,7 +139,7 @@ func alphaBeta(board *goita.Board, playerNo int, eval evalFunc, move *goita.Move
 		if !util.IsSameTeam(playerNo, board.LastAttacker()) {
 			score *= -1
 		}
-		history := board.SubHistory(board.MoveHistoryIndex-depth, board.MoveHistoryIndex+1, (*shared)[depth].moveHashBuf)
+		history := board.SubHistory(board.MoveHistoryIndex-depth, board.MoveHistoryIndex+1)
 		board.UndoMove()
 		return &EvaluatedMove{Score: score, History: history}
 	}
