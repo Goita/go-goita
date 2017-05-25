@@ -33,7 +33,7 @@ type Board struct {
 }
 
 // NewBoard creates board instance with hands and Dealer
-func NewBoard(Dealer int, hands []*KomaArray) *Board {
+func NewBoard(Dealer int, hands []KomaArray) *Board {
 	b := &Board{}
 	b.initWithInitialStateData(Dealer, hands)
 	return b
@@ -66,7 +66,7 @@ func (b *Board) initBase() {
 	b.InitialShiCounts = make([]int, 4)
 }
 
-func (b *Board) initWithInitialStateData(Dealer int, hands []*KomaArray) {
+func (b *Board) initWithInitialStateData(Dealer int, hands []KomaArray) {
 	b.initBase()
 	b.Dealer = Dealer
 	for i, v := range hands {
@@ -87,7 +87,7 @@ func (b *Board) initWithHistoryString(history string) {
 	for i := 0; i < 4; i++ {
 		b.InitialHands[i] = state[i]
 		k := ParseKomaArray(state[i])
-		p := NewPlayer(&k)
+		p := NewPlayer(k)
 		b.Players[i] = p
 	}
 	Dealerinfo := strings.Split(state[4], "")
@@ -371,9 +371,8 @@ func (b *Board) String() string {
 }
 
 // SubHistory returns a part of history
-func (b *Board) SubHistory(start int, end int, buf MoveHashArray) MoveHashArray {
-	// moves := make(MoveHashArray, 0, end-start+1)
-	moves := buf[:end-start+1]
+func (b *Board) SubHistory(start int, end int) MoveHashArray {
+	moves := make(MoveHashArray, 0, end-start+1)
 	for i := start; i < end; i++ {
 		m := b.MoveHistory[i]
 		moves = append(moves, m.Hash())

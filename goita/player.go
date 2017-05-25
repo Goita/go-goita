@@ -1,9 +1,5 @@
 package goita
 
-import (
-	"bytes"
-)
-
 // FieldLength is field and hand length. the value is 8
 const FieldLength int = 8
 
@@ -17,14 +13,14 @@ type Player struct {
 }
 
 // NewPlayer create a new player data
-func NewPlayer(hand *KomaArray) *Player {
+func NewPlayer(hand KomaArray) *Player {
 	p := new(Player)
 	p.init(hand)
 	return p
 }
 
-func (p *Player) init(hand *KomaArray) {
-	p.hand = *hand
+func (p *Player) init(hand KomaArray) {
+	p.hand = hand
 	p.handCounter = len(p.hand)
 	p.field = make(KomaArray, FieldLength)
 	p.hiddenfield = make(KomaArray, FieldLength)
@@ -35,7 +31,7 @@ func (p *Player) pushKoma(koma Koma, faceDown bool) {
 	if koma == Empty || koma == Hidden {
 		panic("cannot put Empty neither Hidden")
 	}
-	i := bytes.IndexByte(p.hand.GetBytes(), koma.GetByte())
+	i := p.hand.Index(koma)
 	p.hand[i] = Empty
 	p.handCounter--
 	if faceDown {

@@ -1,12 +1,10 @@
 package goita
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"sort"
 	"strings"
-	"unsafe"
 )
 
 // Koma represents koma of goita
@@ -14,17 +12,6 @@ type Koma byte
 
 // KomaArray has 8 koma (including empty)
 type KomaArray []Koma
-
-// GetByte returns the raw byte value
-func (koma *Koma) GetByte() byte {
-	return byte(*koma)
-}
-
-// GetBytes returns the raw byte array
-func (k *KomaArray) GetBytes() []byte {
-	b := *(*[]byte)(unsafe.Pointer(k))
-	return b
-}
 
 // Empty (0x0) represents no koma is here
 const Empty Koma = 0x0
@@ -148,15 +135,20 @@ func ParseKomaArray(handOrField string) KomaArray {
 }
 
 // NewKomaArrayFromBytes creates array of koma from bytes
-func NewKomaArrayFromBytes(handOrField []byte) *KomaArray {
-	if len(handOrField) > FieldLength {
+func NewKomaArrayFromBytes(handOrField []byte) KomaArray {
+	l := len(handOrField)
+	if l > FieldLength {
 		panic(fmt.Sprintf("hand_or_field must be <= 8 length string. but %v was given", handOrField))
 	}
-	return (*KomaArray)(unsafe.Pointer(&handOrField))
+	arr := make(KomaArray, l, FieldLength)
+	for i, b := range handOrField {
+		arr[i] = Koma(b)
+	}
+	return arr
 }
 
 // GetUnique gets distinct koma
-func (k *KomaArray) GetUnique() KomaArray {
+func (k KomaArray) GetUnique() KomaArray {
 	// koma range 1-8 (9 including gyoku)
 	unqMap := make([]Koma, 10)
 	unq := make(KomaArray, 0, FieldLength)
@@ -164,12 +156,12 @@ func (k *KomaArray) GetUnique() KomaArray {
 }
 
 // Unique gets distinct koma (no memory allocation)
-func (k *KomaArray) Unique(mapBuf []Koma, buf KomaArray) KomaArray {
+func (k KomaArray) Unique(mapBuf []Koma, buf KomaArray) KomaArray {
 	unq := buf[:0]
 	for i := 1; i < 10; i++ {
 		mapBuf[i] = 0
 	}
-	for _, v := range *k {
+	for _, v := range k {
 		if v.IsEmpty() || v.IsHidden() {
 			continue
 		}
@@ -185,56 +177,67 @@ func (k *KomaArray) Unique(mapBuf []Koma, buf KomaArray) KomaArray {
 }
 
 // Index returns the index of the first koma in array, or -1 for nothing found
-func (k *KomaArray) Index(koma Koma) int {
-	return bytes.IndexByte(k.GetBytes(), koma.GetByte())
+func (k KomaArray) Index(koma Koma) int {
+	for i, b := range k {
+		if b == koma {
+			return i
+		}
+	}
+	return -1
 }
 
 // Contains detects the koma is in the hand
-func (k *KomaArray) Contains(koma Koma) bool {
-	return bytes.IndexByte(k.GetBytes(), koma.GetByte()) >= 0
+func (k KomaArray) Contains(koma Koma) bool {
+	return k.Index(koma) >= 0
 }
 
 // Count count up the koma in the hand
-func (k *KomaArray) Count(koma Koma) int {
-	return bytes.Count(k.GetBytes(), []byte{koma.GetByte()})
+func (k KomaArray) Count(koma Koma) int {
+	c := 0
+	for _, b := range k {
+		if b == koma {
+			c++
+		}
+	}
+	return c
 }
 
 // Implements sort interface
 
 // Len returns length of KomaArray
-func (k *KomaArray) Len() int {
-	return len(*k)
+func (k KomaArray) Len() int {
+	return len(k)
 }
 
 // Less returns true if array[i] is less than array[j]
-func (k *KomaArray) Less(i, j int) bool {
-	return (*k)[i] < (*k)[j]
+func (k KomaArray) Less(i, j int) bool {
+	return k[i] < k[j]
 }
 
 // More returns true if array[i] is more than array[j]. it's for descending sort.
-func (k *KomaArray) More(i, j int) bool {
-	return (*k)[i] > (*k)[j]
+func (k KomaArray) More(i, j int) bool {
+	return k[i] > k[j]
 }
 
 // Swap changes the place of 2 items by given indexes
-func (k *KomaArray) Swap(i, j int) {
-	(*k)[i], (*k)[j] = (*k)[j], (*k)[i]
+func (k KomaArray) Swap(i, j int) {
+	k[i], k[j] = k[j], k[i]
 }
 
 // SortDesc makes the array order sorted descending
-func (k *KomaArray) SortDesc() {
-	sort.Slice(*k, func(i, j int) bool { return (*k)[i] > (*k)[j] })
+func (k KomaArray) SortDesc() {
+	sort.Slice(k, func(i, j int) bool { return k[i] > k[j] })
 }
 
 // Search returns the index of koma
-func (k *KomaArray) Search(koma Koma) int {
-	return sort.Search(len(*k), func(i int) bool { return (*k)[i] <= koma })
+func (k KomaArray) Search(koma Koma) int {
+	return sort.Search(len(k), func(i int) bool { return k[i] <= koma })
 }
 
-func (k *KomaArray) String() string {
+func (k KomaArray) String() string {
 	// []byte append solution is good for unknown length string concatination
 	str := make([]byte, 0, FieldLength*10)
-	for _, v := range *k {
+	for _, v := range k {
 		str = append(str, v.String()...)
 	}
 	return string(str)
