@@ -47,7 +47,7 @@ func TestBoard_GetPossibleMoves(t *testing.T) {
 			got := b.GetPossibleMoves()
 			ret := make([]string, 0)
 			for _, v := range got {
-				ret = append(ret, v.OpenString())
+				ret = append(ret, v.String())
 			}
 			moves := strings.Join(ret, ",")
 			if len(moves) != len(tt.want) {

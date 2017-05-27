@@ -364,7 +364,7 @@ func (b *Board) String() string {
 		m := b.MoveHistory[i]
 		buf = append(buf, ',')
 		buf = append(buf, '1'+byte(turn))
-		buf = append(buf, m.OpenString()...)
+		buf = append(buf, m.String()...)
 		turn = util.GetNextTurn(turn)
 	}
 	return string(buf)

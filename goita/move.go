@@ -15,7 +15,7 @@ type Move struct {
 }
 
 // MoveHashArray have hashes of move
-type MoveHashArray []byte
+type MoveHashArray []uint
 
 var moveMap []*Move
 
@@ -61,26 +61,28 @@ func (m *Move) IsPass() bool {
 }
 
 // Hash returns identical hash key
-func (m *Move) Hash() byte {
+func (m *Move) Hash() uint {
 	return moveHash(m.block, m.attack, m.faceDown)
 }
 
 // MoveHash calculate identical hash key
-func moveHash(block Koma, attack Koma, faceDown bool) byte {
-	// block 0-8
-	// attack 0-8
-	// facedown flag 1 bit
+func moveHash(block Koma, attack Koma, faceDown bool) uint {
+	// block 0-8 : 4 bit
+	// attack 0-8 : 4 bit
+	// facedown flag 0-1 : 1 bit
+	// total: 9bit
 	if faceDown {
-		return 100 + byte(block)*10 + byte(attack)
+		return 1<<8 | uint(block)<<4 | uint(attack)
 	}
-	return byte(block)*10 + byte(attack)
+	return uint(block)<<4 | uint(attack)
 }
 
 func getMoveMap() []*Move {
-	mmap := make([]*Move, 256, 256)
+	mapLen := 1 << 9
+	mmap := make([]*Move, mapLen, mapLen)
 
-	for b := 0; b < 10; b++ {
-		for a := 0; a < 10; a++ {
+	for b := 0; b < 9; b++ {
+		for a := 0; a < 9; a++ {
 			key1 := moveHash(Koma(b), Koma(a), true)
 			mmap[key1] = &Move{Koma(b), Koma(a), true}
 			key2 := moveHash(Koma(b), Koma(a), false)
@@ -90,8 +92,8 @@ func getMoveMap() []*Move {
 	return mmap
 }
 
-// String returns the string representation for block(may be hidden) and attack, or for pass
-func (m *Move) String() string {
+// StringHidden returns the string representation for block(may be hidden) and attack, or for pass
+func (m *Move) StringHidden() string {
 	if m.IsPass() {
 		return "p"
 	}
@@ -101,8 +103,8 @@ func (m *Move) String() string {
 	return m.block.String() + m.attack.String()
 }
 
-// OpenString returns the string representation for opened block and attack, or for pass
-func (m *Move) OpenString() string {
+// String returns the string representation for opened block and attack, or for pass
+func (m *Move) String() string {
 	if m.IsPass() {
 		return "p"
 	}
@@ -118,7 +120,7 @@ func (a MoveHashArray) History(startTurn int) string {
 			buf = append(buf, ',')
 		}
 		buf = append(buf, '1'+byte(turn))
-		buf = append(buf, moveMap[m].OpenString()...)
+		buf = append(buf, moveMap[m].String()...)
 		turn = util.GetNextTurn(turn)
 	}
 	return string(buf)

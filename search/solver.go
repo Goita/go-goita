@@ -30,12 +30,12 @@ type searchMemory struct {
 }
 
 func (em EvaluatedMove) String() string {
-	return fmt.Sprintf("[%v:%v]", em.Move.OpenString(), em.Score)
+	return fmt.Sprintf("[%v:%v]", em.Move, em.Score)
 }
 
 // StringHistory make move+score+history string
 func (em EvaluatedMove) StringHistory(startTurn int) string {
-	return fmt.Sprintf("[%v:%v -> %v]", em.Move.OpenString(), em.Score, em.History.History(startTurn))
+	return fmt.Sprintf("[%v:%v -> %v]", em.Move, em.Score, em.History.History(startTurn))
 }
 
 // Solve search the deal perfect
