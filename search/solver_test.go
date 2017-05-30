@@ -12,7 +12,7 @@ func TestSolve(t *testing.T) {
 	board := goita.ParseBoard("11244556,12234569,11123378,11113457,s3,371,411,115,2p,3p,4p,145,252,3p,4p,124,2p")
 	ret := Solve(board)
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].Move.Hash() < ret[j].Move.Hash()
+		return ret[i].Move.OrderKey() < ret[j].Move.OrderKey()
 	})
 	if len(ret) != 4 || ret[0].Score != -40 || ret[1].Score != -40 || ret[2].Score != -50 || ret[3].Score != -40 {
 		t.Errorf("search.Solve() = %v, want [p:-40] [81:-40] [82:-50] [83:-40]", ret)
@@ -24,7 +24,7 @@ func TestHistory(t *testing.T) {
 	board := goita.ParseBoard("11244556,12234569,11123378,11113457,s3,371,411,115,2p,3p,4p,145,252,3p,4p,124,2p")
 	ret := Solve(board)
 	sort.Slice(ret, func(i, j int) bool {
-		return ret[i].Move.Hash() < ret[j].Move.Hash()
+		return ret[i].Move.OrderKey() < ret[j].Move.OrderKey()
 	})
 
 	want := []string{

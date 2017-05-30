@@ -68,3 +68,8 @@ func (p *Player) GetHidden() KomaArray {
 	}
 	return diff
 }
+
+// GetHandCount returns a number of koma in this player's hand
+func (p *Player) GetHandCount() int {
+	return p.handCounter
+}

@@ -56,3 +56,38 @@ func TestBoard_GetPossibleMoves(t *testing.T) {
 		})
 	}
 }
+
+// go test ./goita -bench PossibleMoves -benchmem -benchtime 1s
+func Benchmark_PossibleMoves(b *testing.B) {
+	mapBuf := make([]Koma, 10)
+	buf := make(KomaArray, 0, FieldLength)
+	moves := make([]*Move, 0, 64)
+	board1 := ParseBoard("12345678,12345679,11112345,11112345,s1")
+	board2 := ParseBoard("11244556,12234569,11123378,11113457,s3,371,411,115,2p,3p,4p,145,252,3p,4p,124,2p")
+
+	for i := 0; i < b.N; i++ {
+		board1.PossibleMoves(mapBuf, buf, moves)
+		board2.PossibleMoves(mapBuf, buf, moves)
+	}
+}
+
+func TestBoard_Score(t *testing.T) {
+	tests := []struct {
+		name  string
+		board string
+		want  int
+	}{
+		{"not finished", "12345678,12345679,11112345,11112345,s1,113,2p,3p,431,1p,2p,315,4p,156,267,3p,4p,174,242,3p,4p", 0},
+		{"end of deal", "12345678,12345679,11112345,11112345,s1,113,2p,3p,431,1p,2p,315,4p,156,267,3p,4p,174,242,3p,4p,128", 50},
+		{"king's double-up finish", "12667789,12345543,11112345,11112345,s1,116,2p,3p,4p,126,2p,3p,4p,177,2p,3p,4p,188", 100},
+		//{"finish with yaku", "22235567,12345679,11133448,11111145,s1", 30},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := ParseBoard(tt.board)
+			if got := b.Score(); got != tt.want {
+				t.Errorf("Board.Score() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

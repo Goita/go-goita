@@ -9,9 +9,9 @@ import (
 // Move represents block and attack move, or pass move.
 // pass move's block and attack are empty.
 type Move struct {
-	block    Koma
-	attack   Koma
-	faceDown bool
+	Block    Koma
+	Attack   Koma
+	FaceDown bool
 }
 
 // MoveHashArray have hashes of move
@@ -57,12 +57,17 @@ func ParseMove(m string) (move *Move, ok bool) {
 
 // IsPass returns true if move is pass
 func (m *Move) IsPass() bool {
-	return m.block == Empty
+	return m.Block == Empty
 }
 
 // Hash returns identical hash key
 func (m *Move) Hash() uint {
-	return moveHash(m.block, m.attack, m.faceDown)
+	return moveHash(m.Block, m.Attack, m.FaceDown)
+}
+
+// OrderKey returns number to sort moves
+func (m *Move) OrderKey() uint {
+	return uint(m.Block)<<4 | uint(m.Attack)
 }
 
 // MoveHash calculate identical hash key
@@ -97,10 +102,10 @@ func (m *Move) StringHidden() string {
 	if m.IsPass() {
 		return "p"
 	}
-	if m.faceDown {
-		return Hidden.String() + m.attack.String()
+	if m.FaceDown {
+		return Hidden.String() + m.Attack.String()
 	}
-	return m.block.String() + m.attack.String()
+	return m.Block.String() + m.Attack.String()
 }
 
 // String returns the string representation for opened block and attack, or for pass
@@ -108,7 +113,7 @@ func (m *Move) String() string {
 	if m.IsPass() {
 		return "p"
 	}
-	return m.block.String() + m.attack.String()
+	return m.Block.String() + m.Attack.String()
 }
 
 // History converts move hash array into history string

@@ -5,6 +5,8 @@ import (
 	"math"
 	"sort"
 	"strings"
+
+	"github.com/Goita/go-goita/util"
 )
 
 // Koma represents koma of goita
@@ -42,6 +44,25 @@ const Hisha Koma = 0x7
 
 // Ou (0x8)
 const Ou Koma = 0x8
+
+// KomaRing returns a set of all koma
+func KomaRing() KomaArray {
+	ring := make(KomaArray, 0, 32)
+	s := "11111111112222333344445555667789"
+	for _, v := range strings.Split(s, "") {
+		ring = append(ring, ParseKoma(v))
+	}
+	return ring
+}
+
+// Shuffle randomize the provided array order with Fisher-Yates algorithm
+func Shuffle(array KomaArray) {
+	rng := util.GetRNG()
+	for i := len(array) - 1; i > 0; i = i - 1 {
+		j := rng.Intn(i)
+		array[i], array[j] = array[j], array[i]
+	}
+}
 
 // ParseKoma converts string to Koma byte value
 func ParseKoma(str string) Koma {
@@ -147,18 +168,18 @@ func NewKomaArrayFromBytes(handOrField []byte) KomaArray {
 	return arr
 }
 
-// GetUnique gets distinct koma
+// GetUnique gets distinct koma, excluding 0:Empty and f:Hidden
 func (k KomaArray) GetUnique() KomaArray {
-	// koma range 1-8 (9 including gyoku)
-	unqMap := make([]Koma, 10)
+	// koma range 0-8 ()
+	unqMap := make([]Koma, 9)
 	unq := make(KomaArray, 0, FieldLength)
 	return k.Unique(unqMap, unq)
 }
 
-// Unique gets distinct koma (no memory allocation)
+// Unique gets distinct koma, excluding 0:Empty and f:Hidden (no memory allocation)
 func (k KomaArray) Unique(mapBuf []Koma, buf KomaArray) KomaArray {
 	unq := buf[:0]
-	for i := 1; i < 10; i++ {
+	for i := 1; i < 9; i++ {
 		mapBuf[i] = 0
 	}
 	for _, v := range k {
@@ -222,6 +243,11 @@ func (k KomaArray) More(i, j int) bool {
 // Swap changes the place of 2 items by given indexes
 func (k KomaArray) Swap(i, j int) {
 	k[i], k[j] = k[j], k[i]
+}
+
+// Sort makes the array order sorted ascending
+func (k KomaArray) Sort() {
+	sort.Slice(k, func(i, j int) bool { return k[i] < k[j] })
 }
 
 // SortDesc makes the array order sorted descending

@@ -33,9 +33,23 @@ type Board struct {
 }
 
 // NewBoard creates board instance with hands and Dealer
-func NewBoard(Dealer int, hands []KomaArray) *Board {
+func NewBoard(dealer int, hands []KomaArray) *Board {
 	b := &Board{}
-	b.initWithInitialStateData(Dealer, hands)
+	b.initWithInitialStateData(dealer, hands)
+	return b
+}
+
+// NewBoardRandom creates board instance with random hands
+func NewBoardRandom(dealer int) *Board {
+	b := &Board{}
+	ring := KomaRing()
+	Shuffle(ring)
+	hands := make([]KomaArray, 4)
+	for i := 0; i < 4; i++ {
+		hands[i] = ring[i*FieldLength : (i+1)*FieldLength]
+		hands[i].Sort()
+	}
+	b.initWithInitialStateData(dealer, hands)
 	return b
 }
 
@@ -140,7 +154,7 @@ func (b *Board) LastAttacker() int {
 func (b *Board) PlayMove(move *Move) (ok bool) {
 	// face-down check
 	if b.LastAttacker() == b.Turn {
-		move.faceDown = true
+		move.FaceDown = true
 	}
 
 	b.MoveHistoryIndex++
@@ -150,10 +164,10 @@ func (b *Board) PlayMove(move *Move) (ok bool) {
 	finished := false
 	if !move.IsPass() {
 		p := b.Players[b.Turn]
-		p.pushKoma(move.block, move.faceDown)
-		p.pushKoma(move.attack, false)
+		p.pushKoma(move.Block, move.FaceDown)
+		p.pushKoma(move.Attack, false)
 
-		if (move.block.IsKing() && !move.faceDown) || move.attack.IsKing() {
+		if (move.Block.IsKing() && !move.FaceDown) || move.Attack.IsKing() {
 			b.KingUsed++
 		}
 		b.LastAttackMove = move
@@ -197,7 +211,7 @@ func (b *Board) UndoMove() (ok bool) {
 		p.popKoma()
 		p.popKoma()
 
-		if (move.block.IsKing() && !move.faceDown) || move.attack.IsKing() {
+		if (move.Block.IsKing() && !move.FaceDown) || move.Attack.IsKing() {
 			b.KingUsed--
 		}
 
@@ -240,7 +254,7 @@ func (b *Board) PossibleMoves(mapBuf []Koma, buf KomaArray, moves []*Move) []*Mo
 	} else {
 		// Match move
 		moves = append(moves, NewPassMove())
-		block := b.LastAttackMove.attack
+		block := b.LastAttackMove.Attack
 		if hand.Contains(block) {
 			for _, attack := range uniqueHand {
 				if block == attack && hand.Count(block) < 2 {
@@ -342,11 +356,19 @@ func (b *Board) Score() int {
 
 	// yaku ? or finish move
 	// b.HasYaku() //TODO: yaku score
-	s := b.LastAttackMove.attack.GetScore()
-	if b.LastAttackMove.faceDown && b.LastAttackMove.block == b.LastAttackMove.attack {
+	s := b.LastAttackMove.Attack.GetScore()
+	if b.LastAttackMove.FaceDown && b.LastAttackMove.Block == b.LastAttackMove.Attack {
 		s = s * 2
 	}
 	return s
+}
+
+// FinishMoveScore returns the score value of finish attack. it may cause panic when the board is not finished.
+func (b *Board) FinishMoveScore() int {
+	if b.LastAttackMove.FaceDown && b.LastAttackMove.Block == b.LastAttackMove.Attack {
+		return b.LastAttackMove.Attack.GetScore() * 2
+	}
+	return b.LastAttackMove.Attack.GetScore()
 }
 
 func (b *Board) String() string {

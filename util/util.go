@@ -13,14 +13,6 @@ func GetRNG() *rand.Rand {
 	return rng
 }
 
-// Shuffle randomize the provided array order with Fisher-Yates algorithm
-func Shuffle(array []byte) {
-	for i := len(array) - 1; i > 0; i = i - 1 {
-		j := rng.Intn(i)
-		array[i], array[j] = array[j], array[i]
-	}
-}
-
 // ShiftTurn shifts the turn by the offset number
 func ShiftTurn(turn int, offset int) int {
 	if offset < 0 {
