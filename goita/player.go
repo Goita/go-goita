@@ -5,7 +5,7 @@ const FieldLength int = 8
 
 // Player has 8 koma in total in the hand or/and on the field
 type Player struct {
-	hand         KomaArray
+	hand         Hand
 	field        KomaArray
 	hiddenfield  KomaArray
 	handCounter  int
@@ -20,7 +20,7 @@ func NewPlayer(hand KomaArray) *Player {
 }
 
 func (p *Player) init(hand KomaArray) {
-	p.hand = hand
+	p.hand = hand.Hand()
 	p.handCounter = len(p.hand)
 	p.field = make(KomaArray, FieldLength)
 	p.hiddenfield = make(KomaArray, FieldLength)
@@ -31,8 +31,7 @@ func (p *Player) pushKoma(koma Koma, faceDown bool) {
 	if koma == Empty || koma == Hidden {
 		panic("cannot put Empty neither Hidden")
 	}
-	i := p.hand.Index(koma)
-	p.hand[i] = Empty
+	p.hand[koma]--
 	p.handCounter--
 	if faceDown {
 		p.field[p.fieldCounter] = Hidden
@@ -53,8 +52,7 @@ func (p *Player) popKoma() {
 	p.field[removingIndex] = Empty
 	p.hiddenfield[removingIndex] = Empty
 	p.fieldCounter--
-	i := p.hand.Index(Empty)
-	p.hand[i] = koma
+	p.hand[koma]++
 	p.handCounter++
 }
 

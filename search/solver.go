@@ -30,7 +30,6 @@ type LinkedMove struct {
 
 type searchMemory struct {
 	movesBuf []*goita.Move
-	mapBuf   []goita.Koma
 	buf      goita.KomaArray
 	//moveHashBuf goita.MoveHashArray
 }
@@ -98,12 +97,10 @@ func negamaxAsync(copyBoard *goita.Board, playerNo int, move *goita.Move, depth 
 
 	shared := make([]searchMemory, 0, searchDepth)
 	bufBulk := make(goita.KomaArray, goita.FieldLength*searchDepth)
-	mapBufBulk := make([]goita.Koma, 9*searchDepth)
 	movesBufBulk := make([]*goita.Move, 64*searchDepth)
 	for i := 0; i < searchDepth; i++ {
 		mem := searchMemory{
-			buf:      bufBulk[i*goita.FieldLength : i*goita.FieldLength],
-			mapBuf:   mapBufBulk[i*9 : (i+1)*9],
+			buf:      bufBulk[i*goita.FieldLength : (i+1)*goita.FieldLength],
 			movesBuf: movesBufBulk[i*64 : i*64],
 		}
 		shared = append(shared, mem)
@@ -129,7 +126,7 @@ func negamax(board *goita.Board, playerNo int, move *goita.Move, depth int, sear
 
 	atomic.AddUint64(&status.VisitedNode, 1)
 
-	moves := board.PossibleMoves((*shared)[depth].mapBuf, (*shared)[depth].buf, (*shared)[depth].movesBuf)
+	moves := board.PossibleMoves((*shared)[depth].buf, (*shared)[depth].movesBuf)
 
 	// order moves
 	// p := board.Players[board.Turn]
@@ -213,12 +210,10 @@ func StartNegamaxSimple(board *goita.Board, move *goita.Move, eval evalFunc, sea
 	negativeInf = &EvaluatedMove{Score: -999}
 	shared := make([]searchMemory, 0, searchDepth)
 	bufBulk := make(goita.KomaArray, goita.FieldLength*searchDepth)
-	mapBufBulk := make([]goita.Koma, 9*searchDepth)
 	movesBufBulk := make([]*goita.Move, 64*searchDepth)
 	for i := 0; i < searchDepth; i++ {
 		mem := searchMemory{
-			buf:      bufBulk[i*goita.FieldLength : i*goita.FieldLength],
-			mapBuf:   mapBufBulk[i*9 : (i+1)*9],
+			buf:      bufBulk[i*goita.FieldLength : (i+1)*goita.FieldLength],
 			movesBuf: movesBufBulk[i*64 : i*64],
 		}
 		shared = append(shared, mem)
@@ -240,7 +235,7 @@ func negamaxSimple(board *goita.Board, playerNo int, eval evalFunc, move *goita.
 		return &EvaluatedMove{Score: score, History: history}
 	}
 
-	moves := board.PossibleMoves((*shared)[depth].mapBuf, (*shared)[depth].buf, (*shared)[depth].movesBuf)
+	moves := board.PossibleMoves((*shared)[depth].buf, (*shared)[depth].movesBuf)
 	var best *EvaluatedMove
 	best = negativeInf
 	for _, move := range moves {

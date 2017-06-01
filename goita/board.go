@@ -227,12 +227,13 @@ func (b *Board) UndoMove() (ok bool) {
 }
 
 // PossibleMoves returns a list of possible moves (no memory allocation)
-func (b *Board) PossibleMoves(mapBuf []Koma, buf KomaArray, moves []*Move) []*Move {
+func (b *Board) PossibleMoves(buf KomaArray, moves []*Move) []*Move {
 	if b.Finish {
 		return []*Move{}
 	}
 	hand := b.Players[b.Turn].hand
-	uniqueHand := hand.Unique(mapBuf, buf)
+	uniqueCount := hand.Unique(buf)
+	uniqueHand := buf[:uniqueCount]
 	fieldCounter := b.Players[b.Turn].fieldCounter
 	moves = moves[:0]
 	if b.LastAttackMove == nil || b.Turn == b.AttackerLog[len(b.AttackerLog)-1] {
@@ -284,10 +285,9 @@ func (b *Board) PossibleMoves(mapBuf []Koma, buf KomaArray, moves []*Move) []*Mo
 
 // GetPossibleMoves returns a list of possible moves
 func (b *Board) GetPossibleMoves() []*Move {
-	mapBuf := make([]Koma, 10)
-	buf := make(KomaArray, 0, FieldLength)
+	buf := make(KomaArray, FieldLength)
 	moves := make([]*Move, 0, 64)
-	return b.PossibleMoves(mapBuf, buf, moves)
+	return b.PossibleMoves(buf, moves)
 }
 
 // IsEnd returns true if the deal is finished (this is slow)

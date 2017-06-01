@@ -43,6 +43,7 @@ rev | result | comment
  9 | 1000 20479849 ns/op       5162924 B/op   105370 allocs/op | alpha-beta negamax search
 10 | 1000 22639590 ns/op       8282957 B/op   209756 allocs/op | bugfix: solve result history
 11 | 1000 19782379 ns/op      19955525 B/op   191844 allocs/op | manage number of running goroutine
+12 | 1000 18128649 ns/op      21660504 B/op   209012 allocs/op | efficient Hand implement
 
 ## Results of history-2
 

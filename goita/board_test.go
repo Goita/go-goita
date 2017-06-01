@@ -59,15 +59,14 @@ func TestBoard_GetPossibleMoves(t *testing.T) {
 
 // go test ./goita -bench PossibleMoves -benchmem -benchtime 1s
 func Benchmark_PossibleMoves(b *testing.B) {
-	mapBuf := make([]Koma, 10)
-	buf := make(KomaArray, 0, FieldLength)
+	buf := make(KomaArray, FieldLength)
 	moves := make([]*Move, 0, 64)
 	board1 := ParseBoard("12345678,12345679,11112345,11112345,s1")
 	board2 := ParseBoard("11244556,12234569,11123378,11113457,s3,371,411,115,2p,3p,4p,145,252,3p,4p,124,2p")
 
 	for i := 0; i < b.N; i++ {
-		board1.PossibleMoves(mapBuf, buf, moves)
-		board2.PossibleMoves(mapBuf, buf, moves)
+		board1.PossibleMoves(buf, moves)
+		board2.PossibleMoves(buf, moves)
 	}
 }
 

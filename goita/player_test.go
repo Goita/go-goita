@@ -20,7 +20,7 @@ func TestPlayer_pushKoma(t *testing.T) {
 		{
 			"11112233->1",
 			&Player{
-				hand:         ParseKomaArray("11112233"),
+				hand:         ParseHand("11112233"),
 				field:        ParseKomaArray("00000000"),
 				handCounter:  8,
 				hiddenfield:  ParseKomaArray("00000000"),
@@ -28,7 +28,7 @@ func TestPlayer_pushKoma(t *testing.T) {
 			},
 			args{Shi, false},
 			&Player{
-				hand:         ParseKomaArray("01112233"),
+				hand:         ParseHand("01112233"),
 				field:        ParseKomaArray("10000000"),
 				handCounter:  7,
 				hiddenfield:  ParseKomaArray("10000000"),
@@ -50,5 +50,28 @@ func TestPlayer_pushKoma(t *testing.T) {
 				t.Errorf("Player.pushKoma() = %v, want %v", p, tt.want)
 			}
 		})
+	}
+}
+
+func Benchmark_PlayerPushAndPopNext(b *testing.B) {
+	initialHand := ParseKomaArray("12345678")
+	p := NewPlayer(initialHand)
+	for i := 0; i < b.N; i++ {
+		p.pushKoma(Shi, true)
+		p.pushKoma(Gon, false)
+		p.pushKoma(Bakko, false)
+		p.pushKoma(Gin, false)
+		p.pushKoma(Kin, false)
+		p.pushKoma(Kaku, false)
+		p.pushKoma(Hisha, false)
+		p.pushKoma(Ou, false)
+		p.popKoma()
+		p.popKoma()
+		p.popKoma()
+		p.popKoma()
+		p.popKoma()
+		p.popKoma()
+		p.popKoma()
+		p.popKoma()
 	}
 }
