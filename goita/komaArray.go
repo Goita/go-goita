@@ -156,6 +156,20 @@ func (k KomaArray) Hand() Hand {
 
 func (k KomaArray) String() string {
 	// []byte append solution is good for unknown length string concatination
+	str := make([]byte, len(k))
+	for i, v := range k {
+		if v == Hidden {
+			str[i] = 'x'
+		} else {
+			str[i] = byte(v) + '0'
+		}
+	}
+	return string(str)
+}
+
+// StringOld is older way of Stringer method
+func (k KomaArray) StringOld() string {
+	// []byte append solution is good for unknown length string concatination
 	str := make([]byte, 0, FieldLength*10)
 	for _, v := range k {
 		str = append(str, v.String()...)

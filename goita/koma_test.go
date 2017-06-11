@@ -60,21 +60,3 @@ func TestKoma_String(t *testing.T) {
 		})
 	}
 }
-
-func TestKomaArray_String(t *testing.T) {
-	tests := []struct {
-		name string
-		k    KomaArray
-		want string
-	}{
-		// TODO: Add test cases.
-		{"11112345", ParseKomaArray("11112345"), "11112345"},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.k.String(); got != tt.want {
-				t.Errorf("KomaArray.String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
