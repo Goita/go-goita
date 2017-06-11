@@ -19,13 +19,19 @@ var CmdSolve = &Command{
 		flag.CommandLine.Parse(args)
 
 		board := goita.ParseBoard(*history)
+		moves := board.GetPossibleMoves()
+		fmt.Printf("search begin on %v moves ", len(moves))
+		fmt.Println(moves)
+
+		results := make([]*search.EvaluatedMove, 0, len(moves))
 		start := time.Now()
 		ret := search.Solve(board)
-		elapsed := time.Since(start)
-		fmt.Println(ret)
-		for _, r := range ret {
+		for r := range ret {
+			results = append(results, r)
 			fmt.Printf("move:[%v] score:[%v] %v\n\n", r.Move, r.Score, r.History.History(board.Turn))
 		}
+		elapsed := time.Since(start)
+		fmt.Println(results)
 		fmt.Printf("execution time: %s\n", elapsed)
 	},
 }

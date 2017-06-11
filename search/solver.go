@@ -61,34 +61,38 @@ func evalScore(b *goita.Board) int {
 var negativeInf *EvaluatedMove
 
 // Solve search the deal perfect
-func Solve(board *goita.Board) []EvaluatedMove {
+func Solve(board *goita.Board) chan *EvaluatedMove {
 	return StartNegamax(board, MaxDepth, evalScore)
 }
 
 // StartNegamax manages negamax search goroutines
-func StartNegamax(board *goita.Board, searchDepth int, eval evalFunc) []EvaluatedMove {
+func StartNegamax(board *goita.Board, searchDepth int, eval evalFunc) chan *EvaluatedMove {
 	negativeInf = &EvaluatedMove{Score: -999}
 
 	moves := board.GetPossibleMoves()
-	fmt.Printf("search begin on %v moves ", len(moves))
-	fmt.Println(moves)
-	evaledMoves := make([]EvaluatedMove, 0, len(moves))
+	// fmt.Printf("search begin on %v moves ", len(moves))
+	// fmt.Println(moves)
 	status := &Status{MaxRoutines: int32(runtime.NumCPU())}
 	ch := make(chan *EvaluatedMove, len(moves))
+	retch := make(chan *EvaluatedMove, len(moves))
 	for _, move := range moves {
 		go negamaxAsync(board.Copy(), board.Turn, move, 0, searchDepth, -999, 999, eval, status, ch)
 		atomic.AddInt32(&status.Routines, 1)
 	}
-	for i := 0; i < len(moves); i++ {
-		result := <-ch
-		atomic.AddInt32(&status.Routines, -1)
-		fmt.Println("search done!", result)
-		evaledMoves = append(evaledMoves, *result)
-	}
+	// wait for result
+	go func() {
+		for i := 0; i < len(moves); i++ {
+			result := <-ch
+			atomic.AddInt32(&status.Routines, -1)
+			// fmt.Println("search done!", result)
+			retch <- result
+		}
+		close(retch)
+	}()
 
-	fmt.Printf("%+v\n", status)
+	// fmt.Printf("%+v\n", status)
 
-	return evaledMoves
+	return retch
 }
 
 // negamaxAsync run negamax search async and returns result to channel

@@ -23,7 +23,7 @@ func TestSolve(t *testing.T) {
 func BenchmarkSolve(b *testing.B) {
 	board := goita.ParseBoard("11244556,12234569,11123378,11113457,s3,371,411,115,2p,3p,4p,145,252,3p,4p,124,2p")
 	for i := 0; i < b.N; i++ {
-		SolveSimple(board)
+		Solve(board)
 	}
 	// fmt.Println(ret)
 }
