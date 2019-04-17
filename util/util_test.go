@@ -1,25 +1,8 @@
 package util
 
 import (
-	"bytes"
 	"testing"
 )
-
-func TestShuffle(t *testing.T) {
-	sumIndex := 0
-	loop := 1000
-	for n := 0; n < loop; n++ {
-		arr := make([]byte, 100)
-		for i := range arr {
-			arr[i] = byte(i)
-		}
-		Shuffle(arr)
-		sumIndex += bytes.IndexByte(arr, byte(0))
-	}
-	if indicator := sumIndex / loop; indicator < 45 && indicator > 55 {
-		t.Error("Shuffle seems to be not working propery")
-	}
-}
 
 func TestShiftTurn(t *testing.T) {
 	type args struct {

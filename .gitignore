@@ -27,3 +27,4 @@ debug
 
 # Temp output
 go-goita
+coverage.out
